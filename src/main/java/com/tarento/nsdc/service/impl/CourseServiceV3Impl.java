@@ -26,7 +26,7 @@ public class CourseServiceV3Impl implements ICourseServiceV3 {
     @Value("${rejected.folder.path}")
     private String rejectedFolderPath;
 
-    @Value("${kafka.topic.name}")
+    @Value("${kafka.v2.topic.name}")
     private String kafkaTopicName;
 
     private static final Logger logger = LoggerFactory.getLogger(CourseServiceV3Impl.class);
@@ -129,20 +129,4 @@ public class CourseServiceV3Impl implements ICourseServiceV3 {
             logger.error("Problem occurred while moving file "+e.getMessage());
         }
     }
-
- /*   private String validateRows(Map<String, Object> dataMap) {
-        for (String sheetName : dataMap.keySet()) {
-            List<Map<String, String>> rows = (List<Map<String, String>>) dataMap.get(sheetName);
-            for (int i = 0; i < rows.size(); i++) {
-                Map<String, String> row = rows.get(i);
-                for (String key : row.keySet()) {
-                    String value = row.get(key);
-                    if (value == null || value.trim().isEmpty()) {
-                        return "Empty value found in " + sheetName + " at row " + (i + 1) + ", column " + key;
-                    }
-                }
-            }
-        }
-        return "Valid";
-    }*/
 }

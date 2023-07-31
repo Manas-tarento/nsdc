@@ -1,8 +1,8 @@
 package com.tarento.nsdc.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tarento.nsdc.service.ICourseService;
 import com.tarento.nsdc.producer.Producer;
+import com.tarento.nsdc.service.ICourseServiceV2;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class CourseServiceImplV2 implements ICourseService {
+public class CourseServiceImplV2 implements ICourseServiceV2 {
 
     @Value("${proceed.folder.path}")
     private String proceedFolderPath;
@@ -118,21 +118,6 @@ public class CourseServiceImplV2 implements ICourseService {
             logger.error("Exception occurred while moving file");
         }
     }
-
-    /*private Map<String, String> convertRowToDataMap(Row row, Row headerRow) {
-        Map<String, String> dataMap = new HashMap<>();
-        DataFormatter formatter = new DataFormatter();
-        for (int colIndex = 0; colIndex < headerRow.getLastCellNum(); colIndex++) {
-            Cell headerCell = headerRow.getCell(colIndex);
-            Cell cell = row.getCell(colIndex);
-            if (headerCell != null && cell != null) {
-                String propertyName = headerCell.getStringCellValue().trim();
-                String cellValue = formatter.formatCellValue(cell).trim();
-                dataMap.put(propertyName, cellValue);
-            }
-        }
-        return dataMap;
-    }*/
 
     private Map<String, Object> convertRowToDataMap(Row row, Row headerRow) {
         Map<String, Object> dataMap = new HashMap<>();
