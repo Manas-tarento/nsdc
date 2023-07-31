@@ -3,7 +3,10 @@ package com.tarento.nsdc.service.impl;
 import com.tarento.nsdc.service.ICourseServiceV3;
 import com.tarento.nsdc.producer.Producer;
 import org.apache.poi.ss.usermodel.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,52 +20,39 @@ import java.util.*;
 @Service
 public class CourseServiceV3Impl implements ICourseServiceV3 {
 
-    private static final String PROCEED_FOLDER_PATH = "/home/manas/CourseBucket/proceed";
-    private static final String REJECTED_FOLDER_PATH = "/home/manas/CourseBucket/rejected";
-    private static final String KAFKA_TOPIC_NAME = "courseV2";
+    @Value("${proceed.folder.path}")
+    private String proceedFolderPath;
+
+    @Value("${rejected.folder.path}")
+    private String rejectedFolderPath;
+
+    @Value("${kafka.topic.name}")
+    private String kafkaTopicName;
+
+    private static final Logger logger = LoggerFactory.getLogger(CourseServiceV3Impl.class);
 
     @Autowired
     private Producer kafkaTemplate;
-
-   /* public void processIncomingFile(String fileName) {
-        String filePath = "/home/manas/CourseBucket/incoming" + File.separator + fileName;
-        File file = new File(filePath);
-        if (file.exists()) {
-            System.out.println("Processing file: " + fileName);
-            boolean isValid = validateAndProcessExcel(file);
-            if (isValid) {
-                System.out.println("File is valid. Processing completed successfully.");
-                moveFile(file, PROCEED_FOLDER_PATH, "proceed");
-            } else {
-                System.out.println("File is invalid. Moving to the rejected folder.");
-                moveFile(file, REJECTED_FOLDER_PATH, "rejected");
-            }
-        } else {
-            System.out.println("File not found: " + fileName);
-        }
-    }*/
 
     public void processIncomingFile(String fileName) {
         String filePath = "/home/manas/CourseBucket/incoming" + File.separator + fileName;
         File file = new File(filePath);
         if (file.exists()) {
-            System.out.println("Processing file: " + fileName);
-            long startTime = System.currentTimeMillis(); // Record the start time
+            logger.info("Processing file: " + fileName);
+            long startTime = System.currentTimeMillis();
             boolean isValid = validateAndProcessExcel(file);
-            long endTime = System.currentTimeMillis(); // Record the end time
-
+            long endTime = System.currentTimeMillis();
             if (isValid) {
-                System.out.println("File is valid. Processing completed successfully.");
-                moveFile(file, PROCEED_FOLDER_PATH, "proceed");
+                logger.info("File is valid. Processing completed successfully.");
+                moveFile(file, proceedFolderPath, "proceed");
             } else {
-                System.out.println("File is invalid. Moving to the rejected folder.");
-                moveFile(file, REJECTED_FOLDER_PATH, "rejected");
+                logger.info("File is invalid. Moving to the rejected folder.");
+                moveFile(file, rejectedFolderPath, "rejected");
             }
-
             long timeTaken = endTime - startTime;
-            System.out.println("Time taken to process the file: " + timeTaken + " milliseconds");
+            logger.info("Time taken to process the file: " + timeTaken + " milliseconds");
         } else {
-            System.out.println("File not found: " + fileName);
+            logger.error("File not found: " + fileName);
         }
     }
 
@@ -76,8 +66,8 @@ public class CourseServiceV3Impl implements ICourseServiceV3 {
                     return false;
                 }
                 Map<String, Object> dataMap = convertSheetToDataMap(sheet);
-                kafkaTemplate.push(KAFKA_TOPIC_NAME, dataMap);
-                System.out.println("Data sent to Kafka:");
+                kafkaTemplate.push(kafkaTopicName, dataMap);
+                logger.info("Data sent to Kafka:");
             }
             return true;
         } catch (IOException e) {
@@ -131,12 +121,12 @@ public class CourseServiceV3Impl implements ICourseServiceV3 {
             Path targetFolderPathWithFile = Paths.get(targetFolderPath, file.getName());
             Files.move(sourceFilePath, targetFolderPathWithFile);
             if (Files.exists(sourceFilePath)) {
-                System.out.println("Failed to move the file to the " + targetFolderName + " folder: " + file.getName());
+                logger.error("Failed to move the file to the " + targetFolderName + " folder: " + file.getName());
             } else {
-                System.out.println("File moved to the " + targetFolderName + " folder: " + file.getName());
+                logger.info("File moved to the " + targetFolderName + " folder: " + file.getName());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Problem occurred while moving file "+e.getMessage());
         }
     }
 
